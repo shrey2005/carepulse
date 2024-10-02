@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { useRouter } from "next/navigation"
@@ -16,9 +16,11 @@ import SubmitButton from "@/components/SubmitButton"
 import CustomField from "../CustomField"
 import { PatientFormValidation } from "@/lib/validation"
 import { Doctors, genderOptions, IdentificationTypes, PatientFormDefaultValues } from "@/constant"
-import { SelectItem } from "../ui/select"
+import { SelectItem } from "@/components/ui/select"
 import Image from "next/image"
 import FileUploder from "../FileUploder"
+import "react-datepicker/dist/react-datepicker.css";
+import "react-phone-number-input/style.css";
 
 export enum FormFieldType {
   INPUT = "input",
@@ -37,76 +39,67 @@ const RegisterForm = ({ user }: { user: User }) => {
   const [isLoading, setIsLoading] = useState(false);
   const form = useForm<z.infer<typeof PatientFormValidation>>({
     resolver: zodResolver(PatientFormValidation),
-    defaultValues: {
-      ...PatientFormDefaultValues,
-      name: "",
-      email: "",
-      phone: ""
-    },
   })
 
-  // 2. Define a submit handler.
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        name: user?.name,
+        email: user?.email,
+        phone: user?.phone
+      })
+    }
+  }, [user])
+
   async function onSubmit(values: z.infer<typeof PatientFormValidation>) {
-    console.log('on submit data : ', values)
     setIsLoading(true)
 
-    let formData
+    let formData = new FormData();
 
     if (values.identificationDocument && values.identificationDocument?.length > 0) {
       const blobFile = new Blob([values.identificationDocument[0]], { type: values.identificationDocument[0].type })
-
-      formData = new FormData();
-      formData.append('blobFile', blobFile);
-      formData.append('fileName', values.identificationDocument[0].name);
+      formData.append('file', blobFile);
+      formData.append('fileContent', values.identificationDocument[0].name);
     }
 
     try {
-      const patientData = {
-        // userId: user.$id,
-        name: values.name,
-        email: values.email,
-        phone: values.phone,
-        dob: values.birthDate,
-        gender: values.gender,
-        address: values.address,
-        occupation: values.occupation,
-        emergancyContactName: values.emergencyContactName,
-        emergancyContactPhone: values.emergencyContactNumber,
-        primaryPhysician: values.primaryPhysician,
-        insuranceProvider: values.insuranceProvider,
-        insurancePolicyNumber: values.insurancePolicyNumber,
-        allergies: values.allergies,
-        currentMedication: values.currentMedication,
-        familyMedicalHistory: values.familyMedicalHistory,
-        pastMedicalHistory: values.pastMedicalHistory,
-        identificationNumber: values.identificationNumber,
-        identificationType: values.identificationType,
-        identificationDocument: formData
-      }
 
-      console.log(patientData, 'patient data')
+      formData.append('name', values?.name);
+      formData.append('email', values?.email);
+      formData.append('phone', values?.phone);
+      formData.append('dob', values?.birthDate);
+      formData.append('gender', values?.gender);
+      formData.append('address', values?.address);
+      formData.append('occupation', values?.occupation);
+      formData.append('emergancyContactName', values?.emergencyContactName);
+      formData.append('emergancyContactPhone', values?.emergencyContactNumber);
+      formData.append('primaryPhysician', values?.primaryPhysician);
+      formData.append('insuranceProvider', values?.insuranceProvider);
+      formData.append('insurancePolicyNumber', values?.insurancePolicyNumber);
+      formData.append('allergies', values?.allergies);
+      formData.append('currentMedication', values?.currentMedication);
+      formData.append('familyMedicalHistory', values?.familyMedicalHistory);
+      formData.append('pastMedicalHistory', values?.pastMedicalHistory);
+      formData.append('identificationType', values?.identificationType);
 
       axios
-        .post("http://localhost:3007/api/createpatient", patientData)
+        .post("http://localhost:3007/api/createpatient",
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        )
         .then((response) => {
-          console.log(response);
           if (response) {
-            router.push(`/paitents/${response.$id}/new-appointment`)
+            router.push(`/paitents/${response?.data?.id}/new-appointment`)
           }
         });
 
-      // console.log('New User: ', newUser)  
-
-      // const response = await newUser.json();
-
-      // if (response) {    
-      //   router.push(`/paitents/${response.$id}/register`)
-      // }
     } catch (error) {
       console.log(error)
     }
-
-    console.log(values)
 
     setIsLoading(false);
   }
@@ -136,10 +129,11 @@ const RegisterForm = ({ user }: { user: User }) => {
               control={form.control}
               fieldType={FormFieldType.INPUT}
               name="email"
-              label="Email"
+              label="Email address"
               placeholder="jhon.doe@gmail.com"
               iconSrc="/assets/icons/email.svg"
-              iconAlt="user" />
+              iconAlt="user"
+            />
             <CustomField
               control={form.control}
               fieldType={FormFieldType.PHONE_INPUT}
@@ -208,8 +202,7 @@ const RegisterForm = ({ user }: { user: User }) => {
             fieldType={FormFieldType.PHONE_INPUT}
             name="emergencyContactNumber"
             label="Emergancy Contact Number"
-            placeholder="+91 9876543210"
-          />
+            placeholder="+91 9876543210" />
         </div>
         <section className="space-y-6">
           <div className="mb-9 space-y-1">
@@ -277,7 +270,7 @@ const RegisterForm = ({ user }: { user: User }) => {
           <CustomField
             control={form.control}
             fieldType={FormFieldType.TEXTAREA}
-            name="pasrMedicalHistory"
+            name="pastMedicalHistory"
             label="Past Medical History"
             placeholder="Appendectomy"
           />

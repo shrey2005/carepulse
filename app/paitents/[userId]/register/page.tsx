@@ -11,12 +11,12 @@ const Register = ({ params: { userId } }: SearchParamProps) => {
 
     const [user, setUser] = useState()
     useEffect(() => {
-        axios.get(`http://localhost:3007/api/id?=${userId}`)
+        axios.get(`http://localhost:3007/api/user?id=${userId}`)
             .then((response) => {
-                setUser(response)
+                setUser(response?.data)
             })
             .catch((error) => {
-                console.log(error)
+                console.log('Error while Register : ', error)
             })
     }, [userId])
 

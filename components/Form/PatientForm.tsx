@@ -14,7 +14,6 @@ import SubmitButton from "@/components/SubmitButton"
 import CustomField from "../CustomField"
 import { UserFormValidation } from "@/lib/validation"
 
-
 export enum FormFieldType {
   INPUT = "input",
   CHECKBOX = "checkbox",
@@ -49,25 +48,14 @@ const PatientForm = () => {
       axios
         .post("http://localhost:3007/api/createpatient", userData)
         .then((response) => {
-          console.log(response);
           if (response) {
-            router.push(`/paitents/${response.$id}/register`)
+            router.push(`/paitents/${response?.data?.id}/register`)
           }
         });
 
-      // console.log('New User: ', newUser)  
-
-      // const response = await newUser.json();
-
-      // if (response) {
-      //   router.push(`/paitents/${response.$id}/register`)
-      // }
     } catch (error) {
       console.log(error)
     }
-
-    console.log(values)
-
     setIsLoading(false);
   }
 

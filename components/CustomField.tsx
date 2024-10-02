@@ -1,6 +1,7 @@
 "use client"
 
 import React from 'react';
+import { E164Number } from "libphonenumber-js/core";
 
 import 'react-phone-number-input/style.css'
 
@@ -38,6 +39,7 @@ interface CustomProps {
     dateFormat?: string;
     showTimeSelect?: boolean,
     children?: React.ReactNode,
+    className?: string,
     renderSkeleton?: (field: any) => React.ReactNode
 }
 
@@ -121,13 +123,13 @@ const RenderField = ({ field, props }: { field: any, props: CustomProps }) => {
 }
 
 export default function CustomField(props: CustomProps) {
-    const { control, fieldType, name, label } = props
+    const { control, fieldType, name, label, className } = props
     return (
         <FormField
             control={control}
             name={name}
             render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex-1">
                     {fieldType !== FormFieldType.CHECKBOX && label && <FormLabel>{label}</FormLabel>}
                     <RenderField field={field} props={props} />
                     <FormMessage className="shad-error" />

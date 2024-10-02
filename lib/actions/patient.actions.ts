@@ -3,7 +3,6 @@ import { users } from "../appwrite.config"
 
 export const createUser = async (user: CreateUserParams) => {
     try {
-        console.log('try called createUser: ', users)
         const newUser = await users.create(
             ID.unique(),
             user.email,
@@ -11,7 +10,6 @@ export const createUser = async (user: CreateUserParams) => {
             undefined,
             user.name
         )
-        console.log(newUser, 'result')
     } catch (error: any) {
         console.log(error,'error')
         if (error && error?.code === 409) {
